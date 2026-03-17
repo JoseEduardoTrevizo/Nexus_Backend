@@ -1,4 +1,4 @@
-const jwt = "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 // Este middleware se coloca antes de cualquier ruta que requiera autenticación
 // Si el token es válido, agrega req.user con los datos del usuario y llama next()
@@ -7,7 +7,7 @@ const jwt = "jsonwebtoken";
 function verifyToken(req, res, next) {
   // El token viene en el header Authorization: "Bearer eyJhb..."
   const authHeader = req.headers["authorization"];
-
+  console.log("Header recibido:", authHeader);
   // Verificar que el header exista
   if (!authHeader) {
     return res
@@ -17,7 +17,7 @@ function verifyToken(req, res, next) {
 
   // El formato es "Bearer TOKEN", separamos para obtener solo el token
   const token = authHeader.split(" ")[1];
-
+  console.log("Token extraído:", token);
   if (!token) {
     return res
       .status(401)
