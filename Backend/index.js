@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import "./config/database.js"; // Importa para probar conexión al iniciar
 import registroRoutes from "./routes/registro.js";
 import authRoutes from "./routes/auth.js";
@@ -10,6 +12,52 @@ import editProfileRoutes from "./routes/editProfile.js";
 dotenv.config();
 
 const app = express();
+
+// Configura Helmet para headers de seguridad
+app.use(helmet());
+
+// Configura Rate Limiting: máximo 100 solicitudes por IP cada 15 minutos
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // límite de 100 solicitudes por ventana
+  message: {
+    error: "Demasiadas solicitudes desde esta IP, por favor intenta más tarde.",
+  },
+  standardHeaders: true, // Retorna rate limit info en los headers `RateLimit-*`
+  legacyHeaders: false, // Desactiva los headers `X-RateLimit-*`
+});
+
+// Configura Rate Limiting estricto para autenticación: máximo 5 intentos por IP cada 15 minutos
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5, // límite estricto de 5 solicitudes para login/registro
+  message: {
+    error:
+      "Demasiados intentos de autenticación desde esta IP, por favor intenta más tarde.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Aplica rate limiting general a todas las rutas
+app.use(limiter);
+
+// Aplica rate limiting estricto específicamente a rutas de autenticación
+app.use("/api/auth/login", authLimiter);
+app.use("/api/empresas/registro", authLimiter);
+
+// Middleware personalizado para headers CORS adicionales
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+  );
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,POST,DELETE");
+  res.header("Access-Control-Allow-Credentials", true);
+  next();
+});
+
 // Configura CORS para permitir solicitudes desde el frontend
 app.use(cors({ origin: process.env.FRONTEND_URL }));
 app.use(express.json());

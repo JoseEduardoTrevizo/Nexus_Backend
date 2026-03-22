@@ -1,30 +1,27 @@
+import Joi from "joi";
+import validator from "validator";
 import { verificarPlan, insertarEmpresa } from "../models/registros.js";
 
+export const schemaRegistro = Joi.object({
+  nombre: Joi.string().min(3).max(255).required(),
+  email: Joi.string()
+    .email({ tlds: { allow: false } })
+    .required(),
+  industria: Joi.string().max(150).required(),
+  contraseña: Joi.string().min(8).required(),
+  confirmarContraseña: Joi.string().valid(Joi.ref("contraseña")).required(),
+  planId: Joi.number().integer().positive().required(),
+});
+
 export const registrarEmpresa = async (req, res) => {
-  const { nombre, email, industria, contraseña, confirmarContraseña, planId } =
-    req.body;
+  const { nombre, email, industria, contraseña, planId } = req.body;
 
-  // --- Validaciones ---
-  if (
-    !nombre ||
-    !email ||
-    !industria ||
-    !contraseña ||
-    !confirmarContraseña ||
-    !planId
-  ) {
-    return res.status(400).json({ error: "Todos los campos son obligatorios" });
-  }
+  const safeNombre = validator.escape(nombre).trim();
+  const safeEmail = validator.normalizeEmail(email);
+  const safeIndustria = validator.escape(industria).trim();
 
-  if (contraseña !== confirmarContraseña) {
-    return res.status(400).json({ error: "Las contraseñas no coinciden" });
-  }
-
-  if (contraseña.length < 8) {
-    return res
-      .status(400)
-      .json({ error: "La contraseña debe tener al menos 8 caracteres" });
-  }
+  // --- Validaciones existentes para lógica de negocio ---
+  // no hace falta validar aquí la longitud de contraseña o confirmación (joi ya lo hace)
 
   // --- Lógica de negocio ---
   try {
@@ -36,9 +33,9 @@ export const registrarEmpresa = async (req, res) => {
     }
 
     const resultado = await insertarEmpresa({
-      nombre,
-      email,
-      industria,
+      nombre: safeNombre,
+      email: safeEmail,
+      industria: safeIndustria,
       contraseña,
       planId,
     });

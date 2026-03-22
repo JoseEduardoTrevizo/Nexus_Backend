@@ -1,18 +1,21 @@
+import Joi from "joi";
+import validator from "validator";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import db from "../config/database.js";
 
+export const schemaLogin = Joi.object({
+  email: Joi.string()
+    .email({ tlds: { allow: false } })
+    .required(),
+  password: Joi.string().min(8).required(),
+});
+
 // POST /api/auth/login
 async function login(req, res) {
-  // 1. Extraer datos del body
-  const { email, password } = req.body;
-
-  // 2. Validación básica en el backend (nunca confiar solo en el frontend)
-  if (!email || !password) {
-    return res
-      .status(400)
-      .json({ message: "Email y contraseña son obligatorios" });
-  }
+  // 1. Extraer y sanitizar datos del body
+  const email = validator.normalizeEmail(req.body.email);
+  const { password } = req.body;
 
   try {
     // 3. Buscar el usuario en la BD por email
