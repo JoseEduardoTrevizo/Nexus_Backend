@@ -20,10 +20,9 @@ async function login(req, res) {
   try {
     // 3. Buscar el usuario en la BD por email
     // Usamos tu tabla "registros" según tu modelo registros.js
-    const [rows] = await db.query(
-      "SELECT id, nombre, email, industria, password FROM empresas WHERE email = ?",
-      [email],
-    );
+    const [rows] = await db.query("SELECT *FROM empresas WHERE email = ?", [
+      email,
+    ]);
 
     // 4. Verificar que el usuario exista
     if (rows.length === 0) {
@@ -45,6 +44,19 @@ async function login(req, res) {
         .json({ message: "Email o contraseña incorrectos" });
     }
 
+    //5.1 Obtener el plan activo del usuario (si existe)
+    const [suscripcion] = await db.query(
+      `SELECT p.nombre as plan_nombre 
+   FROM suscripciones s 
+   JOIN planes p ON s.plan_id = p.id 
+   WHERE s.empresa_id = ? AND s.estado = 'activa' 
+   LIMIT 1`,
+      [user.id],
+    );
+
+    const planNombre =
+      suscripcion.length > 0 ? suscripcion[0].plan_nombre : null;
+
     // 6. Generar el JWT Token
     // El payload son los datos que queremos guardar dentro del token
     const payload = {
@@ -52,12 +64,21 @@ async function login(req, res) {
       email: user.email,
       nombre: user.nombre,
       industria: user.industria,
+      telefono: user.telefono,
+      web_site: user.website,
+      tamano_empresa: user.tamano_empresa,
+      direccion: user.direccion,
+      horario_atencion: user.horario,
+      ciudad: user.ciudad,
+      eslogan: user.eslogan,
+      acerca_de: user.about,
+      plan: planNombre,
     };
 
     const token = jwt.sign(
       payload,
       process.env.JWT_SECRET, // Clave secreta del .env
-      { expiresIn: "8h" }, // El token expira en 8 horas
+      { expiresIn: "2h" }, // El token expira en 2 horas
     );
 
     // 7. Responder con el token y datos del usuario (sin la contraseña)
@@ -69,6 +90,15 @@ async function login(req, res) {
         nombre: user.nombre,
         email: user.email,
         industria: user.industria,
+        telefono: user.telefono,
+        web_site: user.website,
+        tamano_empresa: user.tamano_empresa,
+        direccion: user.direccion,
+        horario_atencion: user.horario,
+        ciudad: user.ciudad,
+        eslogan: user.eslogan,
+        acerca_de: user.about,
+        plan: planNombre,
       },
     });
   } catch (error) {
