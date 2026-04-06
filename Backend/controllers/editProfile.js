@@ -2,7 +2,7 @@ import Joi from "joi";
 import validator from "validator";
 import jwt from "jsonwebtoken";
 import pool from "../config/database.js";
-import { actualizarPerfil } from "../models/editProfile.js";
+import { actualizarPerfil, editarHeaderPerfil } from "../models/editProfile.js";
 
 export const schemaEditarPerfil = Joi.object({
   email: Joi.string()
@@ -15,6 +15,8 @@ export const schemaEditarPerfil = Joi.object({
   horario: Joi.string().max(100).optional(),
   direccion: Joi.string().max(255).optional(),
   ubicacion: Joi.string().max(150).optional(),
+  nombre: Joi.string().max(150).optional(),
+  eslogan: Joi.string().max(255).optional(),
 });
 
 export const editarPerfil = async (req, res) => {
@@ -80,6 +82,48 @@ export const editarPerfil = async (req, res) => {
     });
   } catch (error) {
     console.error("Error al actualizar perfil:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
+export const actualizarHeaderPerfil = async (req, res) => {
+  const { id } = req.params;
+  const datos = {
+    ...req.body,
+    ...(req.body.nombre && {
+      nombre: validator.escape(req.body.nombre).trim(),
+    }),
+    ...(req.body.eslogan && {
+      eslogan: validator.escape(req.body.eslogan).trim(),
+    }),
+  };
+
+  try {
+    const result = await editarHeaderPerfil(id, datos);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Perfil no encontrado" });
+    }
+    const [rows] = await pool.execute("SELECT * FROM empresas WHERE id = ?", [
+      id,
+    ]);
+    const usuario = rows[0];
+
+    const nuevoToken = jwt.sign(
+      {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        eslogan: usuario.eslogan,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" },
+    );
+    res.json({
+      message: "Encabezado de perfil actualizado correctamente",
+      token: nuevoToken,
+    });
+  } catch (error) {
+    console.error("Error al actualizar encabezado de perfil:", error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };

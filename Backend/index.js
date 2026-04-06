@@ -7,6 +7,7 @@ import "./config/database.js"; // Importa para probar conexión al iniciar
 import registroRoutes from "./routes/registro.js";
 import authRoutes from "./routes/auth.js";
 import editProfileRoutes from "./routes/editProfile.js";
+import empresasRoutes from "./routes/empresas.js";
 
 // Carga variables de entorno
 dotenv.config();
@@ -66,6 +67,7 @@ app.use(express.json());
 app.use("/api/empresas", registroRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api", editProfileRoutes);
+app.use("/api", empresasRoutes);
 
 // Inicia el servidor
 const PORT = process.env.PORT || 5000;

@@ -11,9 +11,8 @@ export const actualizarPerfil = async (id, datos) => {
     direccion,
     ubicacion,
   } = datos;
-  const connection = await pool.getConnection();
   try {
-    const [result] = await connection.execute(
+    const [result] = await pool.execute(
       `UPDATE empresas SET email = ?, telefono = ?, website = ?, industria = ?, tamano_empresa = ?, horario = ?, direccion = ?, ciudad = ? WHERE id = ?`,
       [
         email,
@@ -34,4 +33,19 @@ export const actualizarPerfil = async (id, datos) => {
   }
 };
 
-export default { actualizarPerfil };
+export const editarHeaderPerfil = async (id, datos) => {
+  const { nombre, eslogan } = datos;
+
+  try {
+    const [result] = await pool.execute(
+      `UPDATE empresas SET nombre = ?, eslogan = ? WHERE id = ?`,
+      [nombre, eslogan, id],
+    );
+    return result;
+  } catch (error) {
+    console.error("Error actualizando encabezado de perfil:", error);
+    throw error;
+  }
+};
+
+export default { actualizarPerfil, editarHeaderPerfil };
