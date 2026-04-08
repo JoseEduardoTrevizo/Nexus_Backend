@@ -48,4 +48,19 @@ export const editarHeaderPerfil = async (id, datos) => {
   }
 };
 
-export default { actualizarPerfil, editarHeaderPerfil };
+export const editarAboutPerfil = async (id, datos) => {
+  const { about } = datos;
+
+  try {
+    const [result] = await pool.execute(
+      `UPDATE empresas SET about = ? WHERE id = ?`,
+      [about, id],
+    );
+    return result;
+  } catch (error) {
+    console.error("Error actualizando sección 'Acerca de':", error);
+    throw error;
+  }
+};
+
+export default { actualizarPerfil, editarHeaderPerfil, editarAboutPerfil };

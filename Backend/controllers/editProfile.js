@@ -2,7 +2,11 @@ import Joi from "joi";
 import validator from "validator";
 import jwt from "jsonwebtoken";
 import pool from "../config/database.js";
-import { actualizarPerfil, editarHeaderPerfil } from "../models/editProfile.js";
+import {
+  actualizarPerfil,
+  editarHeaderPerfil,
+  editarAboutPerfil,
+} from "../models/editProfile.js";
 
 export const schemaEditarPerfil = Joi.object({
   email: Joi.string()
@@ -17,6 +21,7 @@ export const schemaEditarPerfil = Joi.object({
   ubicacion: Joi.string().max(150).optional(),
   nombre: Joi.string().max(150).optional(),
   eslogan: Joi.string().max(255).optional(),
+  about: Joi.string().max(255).optional(),
 });
 
 export const editarPerfil = async (req, res) => {
@@ -124,6 +129,42 @@ export const actualizarHeaderPerfil = async (req, res) => {
     });
   } catch (error) {
     console.error("Error al actualizar encabezado de perfil:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
+export const actualizarAboutPerfil = async (req, res) => {
+  const { id } = req.params;
+  const datos = {
+    ...req.body,
+    ...(req.body.about && {
+      about: validator.escape(req.body.about).trim(),
+    }),
+  };
+
+  try {
+    const result = await editarAboutPerfil(id, datos);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Perfil no encontrado" });
+    }
+    const [rows] = await pool.execute("SELECT * FROM empresas WHERE id = ?", [
+      id,
+    ]);
+    const usuario = rows[0];
+    const nuevoToken = jwt.sign(
+      {
+        id: usuario.id,
+        about: usuario.about,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" },
+    );
+    res.json({
+      message: "Sección 'Acerca de' actualizada correctamente",
+      token: nuevoToken,
+    });
+  } catch (error) {
+    console.error("Error al actualizar sección 'Acerca de':", error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };

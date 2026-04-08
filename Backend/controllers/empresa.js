@@ -5,7 +5,7 @@ export const obtenerEmpresa = async (req, res) => {
   try {
     const [rows] = await db.query(
       `SELECT e.id, e.nombre, e.email, e.industria, e.telefono, e.website, 
-              e.tamano_empresa, e.horario, e.ciudad, e.direccion, e.eslogan,
+              e.tamano_empresa, e.horario, e.ciudad, e.direccion, e.eslogan, e.about,
               p.nombre AS plan
        FROM empresas e
        LEFT JOIN suscripciones s ON s.empresa_id = e.id AND s.estado = 'activa'

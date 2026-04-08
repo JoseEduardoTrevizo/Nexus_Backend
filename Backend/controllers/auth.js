@@ -17,48 +17,56 @@ async function login(req, res) {
   const email = validator.normalizeEmail(req.body.email);
   const { password } = req.body;
 
+  let connection;
   try {
     // 3. Buscar el usuario en la BD por email
-    // Usamos tu tabla "registros" según tu modelo registros.js
-    const [rows] = await db.query("SELECT *FROM empresas WHERE email = ?", [
+    console.log(`[Login] Buscando usuario con email: ${email}`);
+    const [rows] = await db.query("SELECT * FROM empresas WHERE email = ?", [
       email,
     ]);
 
     // 4. Verificar que el usuario exista
     if (rows.length === 0) {
-      // Usamos el mismo mensaje para no revelar si el email existe o no
+      console.log(`[Login] Usuario no encontrado: ${email}`);
       return res
         .status(401)
         .json({ message: "Email o contraseña incorrectos" });
     }
 
     const user = rows[0];
+    console.log(`[Login] Usuario encontrado: ${user.nombre}`);
 
     // 5. Comparar la contraseña con el hash guardado en la BD
-    // bcrypt.compare hace esto de forma segura sin desencriptar
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
+      console.log(`[Login] Contraseña incorrecta para: ${email}`);
       return res
         .status(401)
         .json({ message: "Email o contraseña incorrectos" });
     }
 
     //5.1 Obtener el plan activo del usuario (si existe)
-    const [suscripcion] = await db.query(
-      `SELECT p.nombre as plan_nombre 
-   FROM suscripciones s 
-   JOIN planes p ON s.plan_id = p.id 
-   WHERE s.empresa_id = ? AND s.estado = 'activa' 
-   LIMIT 1`,
-      [user.id],
-    );
-
-    const planNombre =
-      suscripcion.length > 0 ? suscripcion[0].plan_nombre : null;
+    console.log(`[Login] Obteniendo plan activo para usuario ID: ${user.id}`);
+    let planNombre = null;
+    try {
+      const [suscripcion] = await db.query(
+        `SELECT p.nombre as plan_nombre 
+         FROM suscripciones s 
+         JOIN planes p ON s.plan_id = p.id 
+         WHERE s.empresa_id = ? AND s.estado = 'activa' 
+         LIMIT 1`,
+        [user.id],
+      );
+      planNombre = suscripcion.length > 0 ? suscripcion[0].plan_nombre : null;
+    } catch (planError) {
+      console.warn(
+        `[Login] Error obteniendo plan (continuando sin plan): ${planError.message}`,
+      );
+    }
 
     // 6. Generar el JWT Token
-    // El payload son los datos que queremos guardar dentro del token
+    console.log(`[Login] Generando JWT para usuario: ${user.id}`);
     const payload = {
       id: user.id,
       email: user.email,
@@ -75,13 +83,12 @@ async function login(req, res) {
       plan: planNombre,
     };
 
-    const token = jwt.sign(
-      payload,
-      process.env.JWT_SECRET, // Clave secreta del .env
-      { expiresIn: "2h" }, // El token expira en 2 horas
-    );
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "2h",
+    });
 
-    // 7. Responder con el token y datos del usuario (sin la contraseña)
+    console.log(`[Login] Login exitoso para: ${email}`);
+    // 7. Responder con el token y datos del usuario
     return res.status(200).json({
       message: "Login exitoso",
       token,
@@ -102,7 +109,10 @@ async function login(req, res) {
       },
     });
   } catch (error) {
-    console.error("Error en login:", error);
+    console.error(
+      `[Login] Error crítico en login: ${error.message}`,
+      error.stack,
+    );
     return res.status(500).json({ message: "Error interno del servidor" });
   }
 }

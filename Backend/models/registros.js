@@ -41,7 +41,11 @@ export const insertarEmpresa = async ({
     await connection.commit();
     return { success: true, empresaId };
   } catch (error) {
-    await connection.rollback();
+    try {
+      await connection.rollback();
+    } catch (rollbackError) {
+      console.error("Error en rollback:", rollbackError);
+    }
     if (error.code === "ER_DUP_ENTRY") {
       throw new Error("El email ya está registrado");
     }
