@@ -8,16 +8,21 @@ export const schemaRegistro = Joi.object({
     .email({ tlds: { allow: false } })
     .required(),
   industria: Joi.string().max(150).required(),
+  telefono: Joi.string().min(10).max(10).required(),
+  direccion: Joi.string().min(5).max(80),
   contraseña: Joi.string().min(8).required(),
   confirmarContraseña: Joi.string().valid(Joi.ref("contraseña")).required(),
   planId: Joi.number().integer().positive().required(),
 });
 
 export const registrarEmpresa = async (req, res) => {
-  const { nombre, email, industria, contraseña, planId } = req.body;
+  const { nombre, email, direccion, telefono, industria, contraseña, planId } =
+    req.body;
 
   const safeNombre = validator.escape(nombre).trim();
   const safeEmail = validator.normalizeEmail(email);
+  const safedireccion = validator.escape(direccion).trim();
+  const safetelefono = validator.escape(telefono).trim();
   const safeIndustria = validator.escape(industria).trim();
 
   // --- Validaciones existentes para lógica de negocio ---
@@ -35,6 +40,8 @@ export const registrarEmpresa = async (req, res) => {
     const resultado = await insertarEmpresa({
       nombre: safeNombre,
       email: safeEmail,
+      direccion: safedireccion,
+      telefono: safetelefono,
       industria: safeIndustria,
       contraseña,
       planId,

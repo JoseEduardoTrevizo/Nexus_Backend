@@ -16,6 +16,8 @@ export const verificarPlan = async (planId) => {
 export const insertarEmpresa = async ({
   nombre,
   email,
+  telefono,
+  direccion,
   industria,
   contraseña,
   planId,
@@ -27,8 +29,8 @@ export const insertarEmpresa = async ({
     const hashedPassword = await bcrypt.hash(contraseña, 12);
 
     const [empresaResult] = await connection.execute(
-      `INSERT INTO empresas (nombre, email, industria, password) VALUES (?, ?, ?, ?)`,
-      [nombre, email, industria || null, hashedPassword],
+      `INSERT INTO empresas (nombre, email, industria, password, telefono, direccion) VALUES (?,?,?, ?, ?, ?)`,
+      [nombre, email, industria || null, hashedPassword, telefono, direccion],
     );
 
     const empresaId = empresaResult.insertId;

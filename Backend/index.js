@@ -8,6 +8,8 @@ import registroRoutes from "./routes/registro.js";
 import authRoutes from "./routes/auth.js";
 import editProfileRoutes from "./routes/editProfile.js";
 import empresasRoutes from "./routes/empresas.js";
+import directorio from "./routes/directorio.js";
+import divisarRouter from "./routes/home.js";
 
 // Carga variables de entorno
 dotenv.config();
@@ -53,6 +55,9 @@ app.use("/api/empresas", registroRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api", editProfileRoutes);
 app.use("/api", empresasRoutes);
+app.use("/api/directorio", directorio);
+app.use("/api/divisas", divisarRouter);
+app.use("/api", divisarRouter);
 
 process.on("uncaughtException", (error) => {
   console.error("CRASH uncaughtException:", error);
