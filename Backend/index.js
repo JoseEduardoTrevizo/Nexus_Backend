@@ -41,23 +41,23 @@ const authLimiter = rateLimit({
 });
 
 // Configura CORS para permitir solicitudes desde el frontend
-app.use(cors({ origin: process.env.FRONTEND_URL }));
+app.use(cors({ origin: process.env.FRONTEND_URL.split(",") }));
 app.use(express.json());
 // Configura Helmet para headers de seguridad
 app.use(helmet());
 // Aplica rate limiting general a todas las rutas
 app.use(limiter);
 // Aplica rate limiting estricto específicamente a rutas de autenticación
-app.use("/api/auth/login", authLimiter);
-app.use("/api/empresas/registro", authLimiter);
+app.use("/auth/login", authLimiter);
+app.use("/empresas/registro", authLimiter);
 // Rutas
-app.use("/api/empresas", registroRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api", editProfileRoutes);
-app.use("/api", empresasRoutes);
-app.use("/api/directorio", directorio);
-app.use("/api/divisas", divisarRouter);
-app.use("/api", divisarRouter);
+app.use("/empresas", registroRoutes);
+app.use("/auth", authRoutes);
+app.use("/private", editProfileRoutes);
+app.use("/public", empresasRoutes);
+app.use("/directorio", directorio);
+app.use("/divisas", divisarRouter);
+app.use("/weather", divisarRouter);
 
 process.on("uncaughtException", (error) => {
   console.error("CRASH uncaughtException:", error);
