@@ -67,7 +67,6 @@ process.on("unhandledRejection", (reason) => {
   console.error("CRASH unhandledRejection:", reason);
 });
 
-// Inicia el servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
