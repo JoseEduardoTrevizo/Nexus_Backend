@@ -15,6 +15,7 @@ import divisarRouter from "./routes/home.js";
 dotenv.config();
 
 const app = express();
+app.set("trust proxy", 1);
 
 // Configura Rate Limiting: máximo 100 solicitudes por IP cada 15 minutos
 const limiter = rateLimit({
