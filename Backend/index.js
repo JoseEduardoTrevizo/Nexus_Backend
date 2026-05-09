@@ -42,7 +42,11 @@ const authLimiter = rateLimit({
 });
 
 // Configura CORS para permitir solicitudes desde el frontend
-app.use(cors({ origin: process.env.FRONTEND_URL.split(",") }));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL.split(","),
+  }),
+);
 app.use(express.json());
 // Configura Helmet para headers de seguridad
 app.use(helmet());
