@@ -59,7 +59,7 @@ app.use("/empresas/registro", authLimiter);
 app.use("/empresas", registroRoutes);
 app.use("/auth", authRoutes);
 app.use("/private", editProfileRoutes);
-app.use("/public", empresasRoutes);
+app.use("/profile", empresasRoutes);
 app.use("/directorio", directorio);
 app.use("/divisas", divisarRouter);
 app.use("/weather", divisarRouter);
