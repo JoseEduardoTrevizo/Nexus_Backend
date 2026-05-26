@@ -63,4 +63,8 @@ export const editarAboutPerfil = async (id, datos) => {
   }
 };
 
-export default { actualizarPerfil, editarHeaderPerfil, editarAboutPerfil };
+export default {
+  actualizarPerfil,
+  editarHeaderPerfil,
+  editarAboutPerfil,
+};

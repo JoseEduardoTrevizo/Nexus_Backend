@@ -10,6 +10,7 @@ import editProfileRoutes from "./routes/editProfile.js";
 import empresasRoutes from "./routes/empresas.js";
 import directorio from "./routes/directorio.js";
 import divisarRouter from "./routes/home.js";
+import vacantes from "./routes/vacantes.js";
 
 // Carga variables de entorno
 dotenv.config();
@@ -63,6 +64,7 @@ app.use("/profile", empresasRoutes);
 app.use("/directorio", directorio);
 app.use("/divisas", divisarRouter);
 app.use("/weather", divisarRouter);
+app.use("/vacantes", vacantes);
 
 process.on("uncaughtException", (error) => {
   console.error("CRASH uncaughtException:", error);

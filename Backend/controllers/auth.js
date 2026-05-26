@@ -20,34 +20,31 @@ async function login(req, res) {
   let connection;
   try {
     // 3. Buscar el usuario en la BD por email
-    console.log(`[Login] Buscando usuario con email: ${email}`);
     const [rows] = await db.query("SELECT * FROM empresas WHERE email = ?", [
       email,
     ]);
 
     // 4. Verificar que el usuario exista
     if (rows.length === 0) {
-      console.log(`[Login] Usuario no encontrado: ${email}`);
+
       return res
         .status(401)
         .json({ message: "Email o contraseña incorrectos" });
     }
 
     const user = rows[0];
-    console.log(`[Login] Usuario encontrado: ${user.nombre}`);
 
     // 5. Comparar la contraseña con el hash guardado en la BD
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      console.log(`[Login] Contraseña incorrecta para: ${email}`);
+
       return res
         .status(401)
         .json({ message: "Email o contraseña incorrectos" });
     }
 
     //5.1 Obtener el plan activo del usuario (si existe)
-    console.log(`[Login] Obteniendo plan activo para usuario ID: ${user.id}`);
     let planNombre = null;
     try {
       const [suscripcion] = await db.query(
@@ -66,7 +63,6 @@ async function login(req, res) {
     }
 
     // 6. Generar el JWT Token
-    console.log(`[Login] Generando JWT para usuario: ${user.id}`);
     const payload = {
       id: user.id,
       email: user.email,
@@ -87,7 +83,6 @@ async function login(req, res) {
       expiresIn: "2h",
     });
 
-    console.log(`[Login] Login exitoso para: ${email}`);
     // 7. Responder con el token y datos del usuario
     return res.status(200).json({
       message: "Login exitoso",

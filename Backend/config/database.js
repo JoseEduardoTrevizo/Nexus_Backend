@@ -14,13 +14,11 @@ const pool = mysql.createPool({
   idleTimeout: 60000, // 60 segundos
   queueLimit: 0,
   enableKeepAlive: true,
-  keepAliveInitialDelayMs: 0,
 });
 
 const testConnection = async () => {
   try {
     const connection = await pool.getConnection();
-    console.log("Conectado a MySQL - DirectrorioDB");
     connection.release();
   } catch (error) {
     console.error("Error conectando a MySQL:", error.message);
