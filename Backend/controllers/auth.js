@@ -26,7 +26,6 @@ async function login(req, res) {
 
     // 4. Verificar que el usuario exista
     if (rows.length === 0) {
-
       return res
         .status(401)
         .json({ message: "Email o contraseña incorrectos" });
@@ -38,7 +37,6 @@ async function login(req, res) {
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-
       return res
         .status(401)
         .json({ message: "Email o contraseña incorrectos" });
@@ -72,6 +70,8 @@ async function login(req, res) {
       web_site: user.website,
       tamano_empresa: user.tamano_empresa,
       direccion: user.direccion,
+      lat: user.lat,
+      lng: user.lng,
       horario_atencion: user.horario,
       ciudad: user.ciudad,
       eslogan: user.eslogan,
@@ -96,6 +96,8 @@ async function login(req, res) {
         web_site: user.website,
         tamano_empresa: user.tamano_empresa,
         direccion: user.direccion,
+        lat: user.lat,
+        lng: user.lng,
         horario_atencion: user.horario,
         ciudad: user.ciudad,
         eslogan: user.eslogan,

@@ -10,10 +10,12 @@ export const actualizarPerfil = async (id, datos) => {
     horario,
     direccion,
     ubicacion,
+    lat,
+    lng,
   } = datos;
   try {
     const [result] = await pool.execute(
-      `UPDATE empresas SET email = ?, telefono = ?, website = ?, industria = ?, tamano_empresa = ?, horario = ?, direccion = ?, ciudad = ? WHERE id = ?`,
+      `UPDATE empresas SET email = ?, telefono = ?, website = ?, industria = ?, tamano_empresa = ?, horario = ?,ciudad = ?, direccion = ?,latitud = ?, longitud = ? WHERE id = ?`,
       [
         email,
         telefono,
@@ -21,8 +23,10 @@ export const actualizarPerfil = async (id, datos) => {
         industria,
         tamano_empresa,
         horario,
-        direccion,
         ubicacion,
+        direccion,
+        lat,
+        lng,
         id,
       ],
     );

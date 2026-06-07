@@ -18,6 +18,8 @@ export const schemaEditarPerfil = Joi.object({
   tamano_empresa: Joi.string().max(100).optional(),
   horario: Joi.string().max(100).optional(),
   direccion: Joi.string().max(255).optional(),
+  lat: Joi.number().required(),
+  lng: Joi.number().required(),
   ubicacion: Joi.string().max(150).optional(),
   nombre: Joi.string().max(150).optional(),
   eslogan: Joi.string().max(255).optional(),
@@ -50,6 +52,12 @@ export const editarPerfil = async (req, res) => {
     ...(req.body.ubicacion && {
       ubicacion: validator.escape(req.body.ubicacion).trim(),
     }),
+    ...(req.body.lat && {
+      lat: parseFloat(req.body.lat),
+    }),
+    ...(req.body.lng && {
+      lng: parseFloat(req.body.lng),
+    }),
   };
 
   try {
@@ -76,6 +84,8 @@ export const editarPerfil = async (req, res) => {
         horario_atencion: usuario.horario,
         ubicacion: usuario.ubicacion,
         direccion: usuario.direccion,
+        lat: usuario.lat,
+        lng: usuario.lng,
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" },

@@ -10,20 +10,39 @@ export const schemaRegistro = Joi.object({
   industria: Joi.string().max(150).required(),
   telefono: Joi.string().min(10).max(10).required(),
   direccion: Joi.string().min(5).max(80),
+  cp: Joi.string()
+    .pattern(/^\d{5}$/)
+    .required()
+    .messages({
+      "string.pattern.base": "El código postal debe tener 5 dígitos",
+    }),
+  lat: Joi.number().required(), // <- agrega esto
+  lng: Joi.number().required(),
   contraseña: Joi.string().min(8).required(),
   confirmarContraseña: Joi.string().valid(Joi.ref("contraseña")).required(),
   planId: Joi.number().integer().positive().required(),
 });
 
 export const registrarEmpresa = async (req, res) => {
-  const { nombre, email, direccion, telefono, industria, contraseña, planId } =
-    req.body;
+  const {
+    nombre,
+    email,
+    direccion,
+    cp,
+    telefono,
+    industria,
+    contraseña,
+    planId,
+    lat,
+    lng,
+  } = req.body;
 
   const safeNombre = validator.escape(nombre).trim();
   const safeEmail = validator.normalizeEmail(email);
   const safedireccion = validator.escape(direccion).trim();
   const safetelefono = validator.escape(telefono).trim();
   const safeIndustria = validator.escape(industria).trim();
+  const safeCp = validator.escape(cp).trim();
 
   // --- Validaciones existentes para lógica de negocio ---
   // no hace falta validar aquí la longitud de contraseña o confirmación (joi ya lo hace)
@@ -41,6 +60,9 @@ export const registrarEmpresa = async (req, res) => {
       nombre: safeNombre,
       email: safeEmail,
       direccion: safedireccion,
+      cp: safeCp,
+      lat,
+      lng,
       telefono: safetelefono,
       industria: safeIndustria,
       contraseña,

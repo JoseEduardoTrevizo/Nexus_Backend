@@ -18,9 +18,12 @@ export const insertarEmpresa = async ({
   email,
   telefono,
   direccion,
+  cp,
   industria,
   contraseña,
   planId,
+  lat,
+  lng,
 }) => {
   const connection = await pool.getConnection();
   try {
@@ -29,8 +32,18 @@ export const insertarEmpresa = async ({
     const hashedPassword = await bcrypt.hash(contraseña, 12);
 
     const [empresaResult] = await connection.execute(
-      `INSERT INTO empresas (nombre, email, industria, password, telefono, direccion) VALUES (?,?,?, ?, ?, ?)`,
-      [nombre, email, industria || null, hashedPassword, telefono, direccion],
+      `INSERT INTO empresas (nombre, email, industria, password, telefono, direccion, latitud, longitud,codigo_postal) VALUES (?,?,?,?, ?, ?, ?, ?, ?)`,
+      [
+        nombre,
+        email,
+        industria || null,
+        hashedPassword,
+        telefono,
+        direccion,
+        lat,
+        lng,
+        cp,
+      ],
     );
 
     const empresaId = empresaResult.insertId;
