@@ -38,7 +38,7 @@ export const registrarEmpresa = async (req, res) => {
   } = req.body;
 
   const safeNombre = validator.escape(nombre).trim();
-  const safeEmail = validator.normalizeEmail(email);
+  const safeEmail = email.toLowerCase().trim();
   const safedireccion = validator.escape(direccion).trim();
   const safetelefono = validator.escape(telefono).trim();
   const safeIndustria = validator.escape(industria).trim();
