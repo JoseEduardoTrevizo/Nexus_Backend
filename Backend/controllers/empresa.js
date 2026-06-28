@@ -4,7 +4,7 @@ export const obtenerEmpresa = async (req, res) => {
   const { id } = req.params;
   try {
     const [rows] = await db.query(
-      `SELECT e.id, e.nombre, e.email, e.industria, e.telefono, e.website, 
+      `SELECT e.id, e.nombre, e.email, e.industria, e.telefono, e.picture_perfil, e.website, 
               e.tamano_empresa, e.horario, e.ciudad, e.direccion, e.latitud, e.longitud, e.eslogan, e.about,
               p.nombre AS plan
        FROM empresas e

@@ -133,3 +133,23 @@ export const activarEstadoVacante = async (vacanteId, estado) => {
     throw error;
   }
 };
+
+export const incrementarVistas = async (idVacante) => {
+  try {
+    const [[vacante]] = await pool.execute(
+      "SELECT id FROM vacantes WHERE id = ?",
+      [idVacante],
+    );
+
+    if (!vacante) return null;
+
+    await pool.execute("UPDATE vacantes SET vistas = vistas + 1 WHERE id = ?", [
+      idVacante,
+    ]);
+
+    return true;
+  } catch (error) {
+    console.error("Error sumando vistas", error);
+    throw error;
+  }
+};

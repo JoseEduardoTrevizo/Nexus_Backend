@@ -2,6 +2,15 @@ import Joi from "joi";
 import validator from "validator";
 import jwt from "jsonwebtoken";
 import pool from "../config/database.js";
+import { Resend } from "resend";
+import {
+  crearAplicacion,
+  obtenerVacanteConEmpresa,
+  incrementarAplicaciones,
+} from "../models/aplicaciones.js";
+import aplicacionTemplate from "../services/email/aplicacionTemplate.js";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 import {
   obtenerVacantes,
   crearVacante,
@@ -10,6 +19,7 @@ import {
   actualizarVacante,
   actualizarEstadoVacante,
   activarEstadoVacante,
+  incrementarVistas,
 } from "../models/vacantes.js";
 
 export const schemaCrearVacante = Joi.object({
@@ -21,6 +31,27 @@ export const schemaCrearVacante = Joi.object({
   requisitos: Joi.string().max(1000).optional(),
   habilidades: Joi.array().max(500).optional(),
   beneficios: Joi.string().max(500).optional(),
+});
+
+export const schemaAplicacion = Joi.object({
+  nombre: Joi.string().max(100).required(),
+  apellido: Joi.string().max(100).allow("").optional(),
+  edad: Joi.string().max(10).allow("").optional(),
+  domicilio: Joi.string().max(255).allow("").optional(),
+  telefono: Joi.string().max(20).required(),
+  sexo: Joi.string().max(20).allow("").optional(),
+  fechaNacimiento: Joi.string().max(20).allow("").optional(),
+  estadoCivil: Joi.string().max(50).allow("").optional(),
+  email: Joi.string().email().required(),
+  escolaridad: Joi.string().max(100).allow("").optional(),
+  tituloRecibido: Joi.string().max(100).allow("").optional(),
+  idiomas: Joi.string().max(255).allow("").optional(),
+  software: Joi.string().max(255).allow("").optional(),
+  maquinas: Joi.string().max(255).allow("").optional(),
+  otroTrabajos: Joi.string().max(255).allow("").optional(),
+  empresa: Joi.string().max(150).allow("").optional(),
+  puesto: Joi.string().max(150).allow("").optional(),
+  descripcion: Joi.string().max(1000).allow("").optional(),
 });
 
 export const listarVacantes = async (req, res) => {
@@ -186,5 +217,133 @@ export const activarEstatusVacante = async (req, res) => {
   } catch (error) {
     console.error("Error al actualizar estatus de vacante:", error);
     res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
+export const aplicarAVacante = async (req, res) => {
+  const { vacanteId } = req.params;
+
+  const { error: validationError, value: datos } = schemaAplicacion.validate(
+    req.body,
+  );
+
+  if (validationError) {
+    return res
+      .status(400)
+      .json({ message: validationError.details[0].message });
+  }
+
+  // Escapar todos los campos de texto
+  const candidato = Object.fromEntries(
+    Object.entries(datos).map(([key, val]) => [
+      key,
+      typeof val === "string" && val ? validator.escape(val).trim() : val,
+    ]),
+  );
+
+  try {
+    const vacante = await obtenerVacanteConEmpresa(vacanteId);
+
+    if (!vacante) {
+      return res.status(404).json({ message: "Vacante no encontrada" });
+    }
+
+    if (!vacante.empresaEmail) {
+      return res
+        .status(422)
+        .json({ message: "La empresa no tiene correo registrado" });
+    }
+
+    const cvBuffer = req.file?.buffer || null;
+    const cvNombre = req.file?.originalname || null;
+
+    const attachments = cvBuffer
+      ? [
+          {
+            filename: cvNombre || `CV_${candidato.nombre}.pdf`,
+            content: cvBuffer,
+          },
+        ]
+      : [];
+
+    const { error } = await resend.emails.send({
+      from: `Enlace Local <${process.env.EMAIL_FROM}>`,
+      to: vacante.empresaEmail,
+      subject: `Nueva aplicación para: ${vacante.puesto}`,
+      html: aplicacionTemplate({
+        vacanteTitulo: vacante.puesto,
+        empresaNombre: vacante.empresaNombre,
+        candidato: { ...candidato, tieneCv: !!cvBuffer },
+      }),
+      attachments,
+    });
+
+    if (error) {
+      console.error("Error al enviar correo:", error);
+      return res
+        .status(502)
+        .json({ message: "No se pudo enviar la aplicación" });
+    }
+
+    await crearAplicacion(vacanteId, candidato.email);
+
+    res
+      .status(200)
+      .json({ message: "Tu aplicación fue enviada correctamente" });
+  } catch (error) {
+    console.error("Error al aplicar a vacante:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
+export const actualizarVistas = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const resultado = await incrementarVistas(id);
+
+    if (!resultado) {
+      return res.status(404).json({
+        success: false,
+        message: "Vacante no encontrada",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Vistas actualizadas correctamente",
+    });
+  } catch (error) {
+    console.error("Error al actualizar vistas:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error interno del servidor",
+    });
+  }
+};
+
+export const actualizarAplicaciones = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const resultado = await incrementarAplicaciones(id);
+
+    if (!resultado) {
+      return res.status(404).json({
+        success: false,
+        message: "Vacante no encontrada",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Aplicaciones actualizadas correctamente",
+    });
+  } catch (error) {
+    console.error("Error al actualizar aplicaciones:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error interno del servidor",
+    });
   }
 };

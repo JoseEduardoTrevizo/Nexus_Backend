@@ -8,13 +8,19 @@ import {
   editarVacante,
   actualizarEstatusVacante,
   activarEstatusVacante,
+  aplicarAVacante,
+  actualizarVistas,
+  actualizarAplicaciones,
 } from "../controllers/vacantes.js";
+import { upload } from "../middleware/uploadMiddleware.js";
 import validateSchema from "../middleware/validateSchema.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
-
+//Rutas publicas
 router.get("/disponibles", listarAllVacantes);
+router.post("/:id/vistas", actualizarVistas);
+router.post("/:id/aplicaciones", actualizarAplicaciones);
 
 // Ruta protegida — requiere token válido
 router.post(
@@ -42,4 +48,7 @@ router.delete(
   validateSchema(schemaCrearVacante),
   eliminarVacanteId,
 );
+
+//Rutas libres
+router.post("/:vacanteId/aplicar", upload.single("cv"), aplicarAVacante);
 export default router;

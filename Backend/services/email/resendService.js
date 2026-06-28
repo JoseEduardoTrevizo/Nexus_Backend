@@ -1,6 +1,6 @@
 // src/services/email/resend.service.js
-const { Resend } = require("resend");
-const aplicacionTemplate = require("./templates/aplicacion.template");
+import { Resend } from "resend";
+import aplicacionTemplate from "./aplicacionTemplate";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 

@@ -14,7 +14,9 @@ export const schemaLogin = Joi.object({
 // POST /api/auth/login
 async function login(req, res) {
   // 1. Extraer y sanitizar datos del body
-  const email = validator.normalizeEmail(req.body.email);
+  const email = validator.normalizeEmail(req.body.email, {
+    gmail_remove_dots: false,
+  });
   const { password } = req.body;
 
   let connection;
@@ -39,7 +41,7 @@ async function login(req, res) {
     if (!passwordMatch) {
       return res
         .status(401)
-        .json({ message: "Email o contraseña incorrectos" });
+        .json({ message: "Contraseña incorrecta intenta de nuevo" });
     }
 
     //5.1 Obtener el plan activo del usuario (si existe)

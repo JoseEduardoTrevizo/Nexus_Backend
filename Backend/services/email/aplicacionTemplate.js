@@ -1,4 +1,40 @@
 // src/services/email/templates/aplicacion.template.js
+const camposOpcionales = (candidato) => {
+  const campos = [
+    { label: "Apellido", value: candidato.apellido },
+    { label: "Edad", value: candidato.edad },
+    { label: "Domicilio", value: candidato.domicilio },
+    { label: "Sexo", value: candidato.sexo },
+    { label: "Fecha de nacimiento", value: candidato.fechaNacimiento },
+    { label: "Estado civil", value: candidato.estadoCivil },
+    { label: "Escolaridad", value: candidato.escolaridad },
+    { label: "Título recibido", value: candidato.tituloRecibido },
+    { label: "Idiomas", value: candidato.idiomas },
+    { label: "Software", value: candidato.software },
+    { label: "Máquinas de oficina", value: candidato.maquinas },
+    { label: "Otros trabajos", value: candidato.otroTrabajos },
+    { label: "Empresa anterior", value: candidato.empresa },
+    { label: "Puesto anterior", value: candidato.puesto },
+    { label: "Actividades desempeñadas", value: candidato.descripcion },
+  ].filter((c) => c.value);
+
+  return campos
+    .map(
+      ({ label, value }) => `
+                <tr>
+                  <td style="padding:16px 20px; border-bottom:1px solid #e5e7eb;">
+                    <span style="font-size:12px; color:#6b7280; display:block;
+                                 text-transform:uppercase; letter-spacing:0.05em;">
+                      ${label}
+                    </span>
+                    <span style="font-size:15px; color:#111827; line-height:1.6;">
+                      ${value}
+                    </span>
+                  </td>
+                </tr>`,
+    )
+    .join("");
+};
 
 const aplicacionTemplate = ({ vacanteTitulo, empresaNombre, candidato }) => `
 <!DOCTYPE html>
@@ -79,6 +115,7 @@ const aplicacionTemplate = ({ vacanteTitulo, empresaNombre, candidato }) => `
                     </span>
                   </td>
                 </tr>
+                ${camposOpcionales(candidato)}
                 ${
                   candidato.mensaje
                     ? `
@@ -134,4 +171,4 @@ const aplicacionTemplate = ({ vacanteTitulo, empresaNombre, candidato }) => `
 </html>
 `;
 
-module.exports = aplicacionTemplate;
+export default aplicacionTemplate;
