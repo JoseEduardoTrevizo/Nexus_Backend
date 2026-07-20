@@ -14,9 +14,13 @@ export const obtenerVacantes = async (empresaId) => {
 export const obtenerAllVacantes = async () => {
   try {
     const [vacantes] = await pool.execute(
-      `SELECT v.*, e.nombre, e.email, e.industria, e.telefono
+      `SELECT v.*, e.nombre, e.email, e.telefono,
+              sub.id AS subsector_id, sub.nombre AS subsector,
+              sec.id AS sector_id, sec.nombre AS sector
        FROM vacantes v
-       INNER JOIN empresas e ON v.idEmpresa = e.id`,
+       INNER JOIN empresas e ON v.idEmpresa = e.id
+       LEFT JOIN subsectores sub ON sub.id = e.subsector_id
+       LEFT JOIN sectores sec ON sec.id = sub.sector_id`,
     );
     return vacantes;
   } catch (error) {

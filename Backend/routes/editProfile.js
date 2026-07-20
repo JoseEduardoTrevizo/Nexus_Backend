@@ -5,6 +5,8 @@ import {
   actualizarHeaderPerfil,
   actualizarAboutPerfil,
   schemaEditarPerfil,
+  schemaEditarHeader,
+  schemaEditarAbout,
 } from "../controllers/editProfile.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
@@ -20,13 +22,13 @@ router.put(
 router.put(
   "/edit-header/:id",
   verifyToken,
-  validateSchema(schemaEditarPerfil),
+  validateSchema(schemaEditarHeader),
   actualizarHeaderPerfil,
 );
 router.put(
   "/edit-about/:id",
   verifyToken,
-  validateSchema(schemaEditarPerfil),
+  validateSchema(schemaEditarAbout),
   actualizarAboutPerfil,
 );
 export default router;

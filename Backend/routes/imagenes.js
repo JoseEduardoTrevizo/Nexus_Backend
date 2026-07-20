@@ -5,6 +5,7 @@ import {
   subirFotoPerfil,
   getImagenesGaleria,
   eliminarImagenGaleria,
+  seleccionarImagenCarrusel,
 } from "../controllers/imagenesUpload.js";
 
 import { verifyToken } from "../middleware/authMiddleware.js";
@@ -20,5 +21,6 @@ router.post(
 );
 router.put("/:id/perfil", verifyToken, uploadSingle("imagen"), subirFotoPerfil);
 router.delete("/:id/imagenes/:imagenId", verifyToken, eliminarImagenGaleria);
+router.put("/:id/carrusel/:imagenId", verifyToken, seleccionarImagenCarrusel);
 
 export default router;

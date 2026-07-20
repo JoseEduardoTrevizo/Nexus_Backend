@@ -11,6 +11,7 @@ import empresasRoutes from "./routes/empresas.js";
 import directorio from "./routes/directorio.js";
 import divisarRouter from "./routes/home.js";
 import vacantes from "./routes/vacantes.js";
+import configuracionRoutes from "./routes/configuracion.js";
 import imagenesRoutes from "./routes/imagenes.js";
 
 // Carga variables de entorno
@@ -65,8 +66,10 @@ app.use("/profile", empresasRoutes);
 app.use("/directorio", directorio);
 app.use("/divisas", divisarRouter);
 app.use("/weather", divisarRouter);
+app.use("/home", divisarRouter);
 app.use("/vacantes", vacantes);
 app.use("/imagenes", imagenesRoutes);
+app.use("/configuracion", configuracionRoutes);
 
 process.on("uncaughtException", (error) => {
   console.error("CRASH uncaughtException:", error);

@@ -69,7 +69,7 @@ async function getImagenesGaleria(req, res) {
 
   try {
     const [rows] = await db.query(
-      `SELECT id, url, orden
+      `SELECT id, url, orden, es_carrusel
        FROM imagenes_empresa
        WHERE empresa_id = ?
        ORDER BY orden ASC`,
@@ -117,9 +117,104 @@ async function eliminarImagenGaleria(req, res) {
   }
 }
 
+async function seleccionarImagenCarrusel(req, res) {
+  const empresaId = req.params.id;
+  const { imagenId } = req.params;
+
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Verificar que la empresa tenga un plan que permita esta función
+    const [[empresa]] = await connection.query(
+      `
+      SELECT p.nombre AS plan
+      FROM empresas e
+      INNER JOIN suscripciones s
+        ON s.empresa_id = e.id
+      INNER JOIN planes p
+        ON p.id = s.plan_id
+      WHERE e.id = ?
+        AND s.estado = 'activa'
+      `,
+      [empresaId],
+    );
+
+    if (!empresa) {
+      await connection.rollback();
+      return res.status(404).json({
+        error: "La empresa no tiene una suscripción activa.",
+      });
+    }
+
+    if (!["Plan Pro", "Plan Premium"].includes(empresa.plan)) {
+      await connection.rollback();
+      return res.status(403).json({
+        error: "Tu plan no permite seleccionar una imagen para el carrusel.",
+      });
+    }
+
+    // Verificar que la imagen pertenezca a la empresa
+    const [[imagen]] = await connection.query(
+      `
+      SELECT id
+      FROM imagenes_empresa
+      WHERE id = ?
+        AND empresa_id = ?
+      `,
+      [imagenId, empresaId],
+    );
+
+    if (!imagen) {
+      await connection.rollback();
+      return res.status(404).json({
+        error: "La imagen no existe o no pertenece a la empresa.",
+      });
+    }
+
+    // Quitar la selección anterior
+    await connection.query(
+      `
+      UPDATE imagenes_empresa
+      SET es_carrusel = 0
+      WHERE empresa_id = ?
+      `,
+      [empresaId],
+    );
+
+    // Marcar la nueva imagen
+    await connection.query(
+      `
+      UPDATE imagenes_empresa
+      SET es_carrusel = 1
+      WHERE id = ?
+      `,
+      [imagenId],
+    );
+
+    await connection.commit();
+
+    res.json({
+      message: "Imagen del carrusel actualizada correctamente.",
+    });
+  } catch (err) {
+    await connection.rollback();
+
+    console.error("seleccionarImagenCarrusel:", err);
+
+    res.status(500).json({
+      error: "Error al actualizar la imagen del carrusel.",
+    });
+  } finally {
+    connection.release();
+  }
+}
+
 export {
   subirImagenGaleria,
   subirFotoPerfil,
   getImagenesGaleria,
   eliminarImagenGaleria,
+  seleccionarImagenCarrusel,
 };

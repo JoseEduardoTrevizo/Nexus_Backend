@@ -19,7 +19,7 @@ export const insertarEmpresa = async ({
   telefono,
   direccion,
   cp,
-  industria,
+  subsectorId,
   contraseña,
   planId,
   lat,
@@ -32,17 +32,16 @@ export const insertarEmpresa = async ({
     const hashedPassword = await bcrypt.hash(contraseña, 12);
 
     const [empresaResult] = await connection.execute(
-      `INSERT INTO empresas (nombre, email, industria, password, telefono, direccion, latitud, longitud,codigo_postal) VALUES (?,?,?,?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO empresas (nombre, email, subsector_id, password, telefono, direccion, latitud, longitud) VALUES (?,?,?, ?, ?, ?, ?, ?)`,
       [
         nombre,
         email,
-        industria || null,
+        subsectorId,
         hashedPassword,
         telefono,
         direccion,
         lat,
         lng,
-        cp,
       ],
     );
 
@@ -68,4 +67,26 @@ export const insertarEmpresa = async ({
   } finally {
     connection.release();
   }
+};
+export const obtenerSectoresActivos = async () => {
+  const [rows] = await pool.query(
+    `SELECT id, nombre FROM sectores WHERE activo = 1 ORDER BY nombre ASC`,
+  );
+  return rows;
+};
+
+export const obtenerSubsectoresPorSector = async (sectorId) => {
+  const [rows] = await pool.query(
+    `SELECT id, nombre FROM subsectores WHERE sector_id = ? AND activo = 1 ORDER BY nombre ASC`,
+    [sectorId],
+  );
+  return rows;
+};
+
+export const verificarSubsectorActivo = async (subsectorId) => {
+  const [rows] = await pool.query(
+    `SELECT id FROM subsectores WHERE id = ? AND activo = 1 LIMIT 1`,
+    [subsectorId],
+  );
+  return rows.length > 0;
 };

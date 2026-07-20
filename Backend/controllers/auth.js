@@ -65,7 +65,7 @@ async function login(req, res) {
       id: user.id,
       email: user.email,
       nombre: user.nombre,
-      industria: user.industria,
+      sector: user.sector_id,
       telefono: user.telefono,
       web_site: user.website,
       tamano_empresa: user.tamano_empresa,
@@ -80,7 +80,7 @@ async function login(req, res) {
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: "2h",
+      expiresIn: "1h",
     });
 
     // 7. Responder con el token y datos del usuario
@@ -91,7 +91,7 @@ async function login(req, res) {
         id: user.id,
         nombre: user.nombre,
         email: user.email,
-        industria: user.industria,
+        sector_id: user.sector_id,
         telefono: user.telefono,
         web_site: user.website,
         tamano_empresa: user.tamano_empresa,
@@ -105,6 +105,7 @@ async function login(req, res) {
         plan: planNombre,
       },
     });
+    console.log("Login exitoso para usuario:", user);
   } catch (error) {
     console.error(
       `[Login] Error crítico en login: ${error.message}`,
