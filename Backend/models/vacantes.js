@@ -28,6 +28,57 @@ export const obtenerAllVacantes = async () => {
   }
 };
 
+export const obtenerPlanActivoEmpresa = async (empresaId) => {
+  const [rows] = await pool.execute(
+    `SELECT p.id, p.nombre, p.limite_vacantes
+     FROM suscripciones s
+     JOIN planes p ON p.id = s.plan_id
+     WHERE s.empresa_id = ?
+       AND s.estado = 'activa'
+       AND (s.fecha_fin IS NULL OR s.fecha_fin > NOW())
+     ORDER BY s.fecha_inicio DESC
+     LIMIT 1`,
+    [empresaId],
+  );
+  return rows[0] || null;
+};
+
+export const contarVacantesEmpresa = async (empresaId) => {
+  const [rows] = await pool.execute(
+    "SELECT COUNT(*) AS total FROM vacantes WHERE idEmpresa = ?",
+    [empresaId],
+  );
+  return rows[0].total;
+};
+
+export const validarLimiteVacantes = async (empresaId) => {
+  const plan = await obtenerPlanActivoEmpresa(empresaId);
+
+  if (!plan) {
+    const err = new Error("La empresa no tiene una suscripción activa");
+    err.status = 403;
+    throw err;
+  }
+
+  // NULL en limite_vacantes = ilimitado (Plan Premium)
+  if (plan.limite_vacantes === null) return;
+
+  if (plan.limite_vacantes === 0) {
+    const err = new Error("Tu plan actual no permite crear vacantes");
+    err.status = 403;
+    throw err;
+  }
+
+  const totalActual = await contarVacantesEmpresa(empresaId);
+  if (totalActual >= plan.limite_vacantes) {
+    const err = new Error(
+      `Alcanzaste el límite de ${plan.limite_vacantes} vacantes para tu plan`,
+    );
+    err.status = 403;
+    throw err;
+  }
+};
+
 export const crearVacante = async (empresaId, datos) => {
   const {
     puesto,

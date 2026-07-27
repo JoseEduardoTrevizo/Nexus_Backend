@@ -6,10 +6,12 @@ export const obtenerEmpresas = async ({ sectorId, subsectorId } = {}) => {
       SELECT e.id, e.nombre, e.email, e.telefono, e.picture_perfil, e.website, 
              e.tamano_empresa, e.horario, e.direccion, e.ciudad, e.latitud, e.longitud, e.eslogan, e.about,
              sub.id AS subsector_id, sub.nombre AS subsector,
-             sec.id AS sector_id, sec.nombre AS sector
+             sec.id AS sector_id, sec.nombre AS sector,
+             s.plan_id
       FROM empresas e
       LEFT JOIN subsectores sub ON sub.id = e.subsector_id
       LEFT JOIN sectores sec ON sec.id = sub.sector_id
+      LEFT JOIN suscripciones s ON s.empresa_id = e.id AND s.estado = 'activa'
     `;
 
     const params = [];

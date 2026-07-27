@@ -8,12 +8,10 @@ import {
   obtenerVacanteConEmpresa,
   incrementarAplicaciones,
 } from "../models/aplicaciones.js";
-import aplicacionTemplate from "../services/email/aplicacionTemplate.js";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 import {
   obtenerVacantes,
   crearVacante,
+  validarLimiteVacantes,
   obtenerAllVacantes,
   eliminarVacante,
   actualizarVacante,
@@ -21,6 +19,9 @@ import {
   activarEstadoVacante,
   incrementarVistas,
 } from "../models/vacantes.js";
+import aplicacionTemplate from "../services/email/aplicacionTemplate.js";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const schemaCrearVacante = Joi.object({
   puesto: Joi.string().max(150).required(),
@@ -107,6 +108,7 @@ export const agregarVacante = async (req, res) => {
   };
 
   try {
+    await validarLimiteVacantes(empresaId);
     const insertId = await crearVacante(empresaId, datos);
     res.status(201).json({
       message: "Vacante creada correctamente",

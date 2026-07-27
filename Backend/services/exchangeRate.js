@@ -50,4 +50,7 @@ const tipoCambioHistorico = async (base = "USD", dias = 7) => {
   return historial;
 };
 
-export default { tipoCambioUSD, tipoCambioHistorico };
+export default {
+  tipoCambioUSD,
+  tipoCambioHistorico,
+};
